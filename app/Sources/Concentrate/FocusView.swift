@@ -65,16 +65,14 @@ struct FocusView: View {
             }
 
             Divider()
-            Toggle("別スペースへ移動したら引き戻す", isOn: $session.bounceBackEnabled)
-                .toggleStyle(.switch)
-                .controlSize(.small)
-                .font(.caption)
-
-            Button("Concentrate を終了") {
-                NSApplication.shared.terminate(nil)
+            HStack {
+                Button("設定…") { session.requestSettings() }
+                    .controlSize(.small)
+                Spacer()
+                Button("終了") { NSApplication.shared.terminate(nil) }
+                    .controlSize(.small)
+                    .foregroundStyle(.secondary)
             }
-            .controlSize(.small)
-            .foregroundStyle(.secondary)
         }
     }
 

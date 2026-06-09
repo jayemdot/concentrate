@@ -144,7 +144,7 @@ struct PasscodeSetupView: View {
                     .foregroundStyle(.red)
             }
 
-            Button("設定して始める", action: save)
+            Button("パスコードを保存", action: save)
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
         }

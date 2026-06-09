@@ -37,6 +37,8 @@ final class SessionController: ObservableObject {
     var onUnlockRequested: (() -> Void)?
     /// パスコード設定を出してほしいとき。
     var onSetupRequested: (() -> Void)?
+    /// 設定ウィンドウを出してほしいとき。
+    var onSettingsRequested: (() -> Void)?
 
     init() {
         blocker.onUnlockHotKey = { [weak self] in
@@ -69,6 +71,10 @@ final class SessionController: ObservableObject {
 
     func requestSetup() {
         onSetupRequested?()
+    }
+
+    func requestSettings() {
+        onSettingsRequested?()
     }
 
     /// パスコードパネルを出して解除を要求する(ロック中のUIボタン用)。
