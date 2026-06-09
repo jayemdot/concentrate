@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# SwiftPM / ビルド成果物
+.build/
+build/
+
+# Xcode
+*.xcuserstate
+*.xcuserdatad
