@@ -56,9 +56,39 @@ final class MenuBarController {
             button.image = NSImage(systemSymbolName: "scope", accessibilityDescription: "Concentrate")
             button.title = ""
         case .locked:
-            button.image = nil
-            button.title = session.remainingText
+            button.image = Self.ringImage(progress: session.progress)
+            button.imagePosition = .imageLeading
+            button.title = " \(session.remainingText)"
         }
+    }
+
+    /// メニューバー用の進捗リング(テンプレート画像=メニューバー色に追従)。
+    private static func ringImage(progress: Double) -> NSImage {
+        let side: CGFloat = 15
+        let image = NSImage(size: NSSize(width: side, height: side), flipped: false) { _ in
+            let inset: CGFloat = 1.5
+            let rect = NSRect(x: inset, y: inset, width: side - inset * 2, height: side - inset * 2)
+            let center = NSPoint(x: rect.midX, y: rect.midY)
+            let radius = rect.width / 2
+
+            let track = NSBezierPath()
+            track.appendArc(withCenter: center, radius: radius, startAngle: 0, endAngle: 360)
+            track.lineWidth = 2
+            NSColor.black.withAlphaComponent(0.25).setStroke()
+            track.stroke()
+
+            let start: CGFloat = 90
+            let end = start - CGFloat(max(0, min(1, progress)) * 360)
+            let arc = NSBezierPath()
+            arc.appendArc(withCenter: center, radius: radius, startAngle: start, endAngle: end, clockwise: true)
+            arc.lineWidth = 2
+            arc.lineCapStyle = .round
+            NSColor.black.setStroke()
+            arc.stroke()
+            return true
+        }
+        image.isTemplate = true
+        return image
     }
 
     @objc private func togglePopover() {

@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// 設定ウィンドウの中身。パスコード変更・挙動・自動起動・連携情報をまとめる。
 struct SettingsView: View {
@@ -41,8 +42,15 @@ struct SettingsView: View {
             Section("ホットキー") {
                 LabeledContent("ロック中の解除", value: "⌃⌥⌘P")
             }
+
+            Section {
+                Button("Concentrate を終了", role: .destructive) {
+                    NSApplication.shared.terminate(nil)
+                }
+            }
         }
         .formStyle(.grouped)
-        .frame(width: 420, height: 460)
+        .tint(Theme.accent)
+        .frame(width: 420, height: 500)
     }
 }

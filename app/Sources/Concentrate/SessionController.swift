@@ -13,6 +13,8 @@ final class SessionController: ObservableObject {
 
     @Published private(set) var state: State = .idle
     @Published private(set) var remaining: TimeInterval = 0
+    /// セッションの総時間(リングの進捗計算用)。
+    @Published private(set) var duration: TimeInterval = 0
     /// アクセシビリティ権限の有無(UI から監視できるよう @Published にする)。
     @Published private(set) var permissionGranted: Bool = ensureAccessibilityPermission(prompt: false)
     /// 解除用パスコードが設定済みか。
@@ -50,6 +52,11 @@ final class SessionController: ObservableObject {
     var remainingText: String {
         let s = max(0, Int(remaining.rounded()))
         return String(format: "%02d:%02d", s / 60, s % 60)
+    }
+
+    /// 残りの割合(1=満タン, 0=終了)。
+    var progress: Double {
+        duration > 0 ? max(0, min(1, remaining / duration)) : 0
     }
 
     /// セッションを開始できる条件がそろっているか。
@@ -97,9 +104,10 @@ final class SessionController: ObservableObject {
             return
         }
 
-        let duration = TimeInterval(minutes * 60)
-        endDate = Date().addingTimeInterval(duration)
-        remaining = duration
+        let total = TimeInterval(minutes * 60)
+        endDate = Date().addingTimeInterval(total)
+        duration = total
+        remaining = total
         state = .locked
         startTimer()
         if bounceBackEnabled {
@@ -118,6 +126,7 @@ final class SessionController: ObservableObject {
         blocker.stop()
         spaceGuard.stop()
         remaining = 0
+        duration = 0
         state = .idle
         notify()
         log.info("セッション終了")

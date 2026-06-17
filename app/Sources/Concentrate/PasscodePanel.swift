@@ -17,7 +17,7 @@ final class PasscodePanelController {
             },
             onCancel: { [weak self] in self?.close() }
         )
-        present(view, title: "ロック解除")
+        present(view)
     }
 
     /// 初回パスコード設定を表示。設定完了で onDone を呼ぶ。
@@ -29,7 +29,7 @@ final class PasscodePanelController {
                 self?.close()
             }
         )
-        present(view, title: "パスコードを設定")
+        present(view)
     }
 
     func close() {
@@ -37,16 +37,17 @@ final class PasscodePanelController {
         panel = nil
     }
 
-    private func present<V: View>(_ view: V, title: String) {
+    private func present<V: View>(_ view: V) {
         close()
-        let hosting = NSHostingController(rootView: view)
+        let hosting = NSHostingController(rootView: view.tint(.indigo))
         let p = NSPanel(contentViewController: hosting)
-        p.styleMask = [.titled, .closable]
-        p.title = title
+        p.styleMask = [.titled, .closable, .fullSizeContentView]
+        p.titlebarAppearsTransparent = true
+        p.titleVisibility = .hidden
+        p.isMovableByWindowBackground = true
         p.isFloatingPanel = true
         p.level = .floating
         p.hidesOnDeactivate = false
-        // フルスクリーンアプリの上(同じスペース)に出すための設定。
         p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         p.center()
         panel = p
@@ -56,10 +57,24 @@ final class PasscodePanelController {
     }
 }
 
+/// 鍵バッジ(indigo グラデの円 + lock.fill)。
+private struct LockBadge: View {
+    var body: some View {
+        Circle()
+            .fill(Theme.accentGradient)
+            .frame(width: 46, height: 46)
+            .overlay(
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(.white)
+            )
+            .shadow(color: Theme.accent.opacity(0.4), radius: 6, y: 2)
+    }
+}
+
 // MARK: - 解除入力
 
 struct PasscodeEntryView: View {
-    /// 入力されたパスコードが正しければ true。
     var onSubmit: (String) -> Bool
     var onAccepted: () -> Void
     var onCancel: () -> Void
@@ -70,8 +85,15 @@ struct PasscodeEntryView: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            Text("パスコードで解除")
-                .font(.headline)
+            LockBadge()
+
+            VStack(spacing: 4) {
+                Text("ロックを解除")
+                    .font(.system(size: 15, weight: .semibold))
+                Text("パスコードを入力してください")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
 
             SecureField("パスコード", text: $code)
                 .textFieldStyle(.roundedBorder)
@@ -80,7 +102,7 @@ struct PasscodeEntryView: View {
 
             if showError {
                 Text("パスコードが違います")
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundStyle(.red)
             }
 
@@ -93,8 +115,9 @@ struct PasscodeEntryView: View {
                     .keyboardShortcut(.defaultAction)
             }
         }
-        .padding(20)
-        .frame(width: 260)
+        .padding(22)
+        .frame(width: 280)
+        .background(.regularMaterial)
         .onAppear { focused = true }
     }
 
@@ -108,7 +131,7 @@ struct PasscodeEntryView: View {
     }
 }
 
-// MARK: - 初回設定
+// MARK: - 初回設定 / 変更
 
 struct PasscodeSetupView: View {
     var onSave: (String) -> Void
@@ -122,34 +145,42 @@ struct PasscodeSetupView: View {
     private enum Field { case code, confirm }
 
     var body: some View {
-        VStack(spacing: 12) {
-            Text("解除用パスコードを設定")
-                .font(.headline)
-            Text("集中をパスコードで解除できるようにします")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        VStack(spacing: 14) {
+            LockBadge()
 
-            SecureField("パスコード(4文字以上)", text: $code)
-                .textFieldStyle(.roundedBorder)
-                .focused($focus, equals: .code)
+            VStack(spacing: 4) {
+                Text("解除用パスコードを設定")
+                    .font(.system(size: 15, weight: .semibold))
+                Text("集中をパスコードで解除できるようにします")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
 
-            SecureField("もう一度入力", text: $confirm)
-                .textFieldStyle(.roundedBorder)
-                .focused($focus, equals: .confirm)
-                .onSubmit(save)
+            VStack(spacing: 8) {
+                SecureField("パスコード(4文字以上)", text: $code)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($focus, equals: .code)
+                SecureField("もう一度入力", text: $confirm)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($focus, equals: .confirm)
+                    .onSubmit(save)
+            }
 
             if let message {
                 Text(message)
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundStyle(.red)
             }
 
             Button("パスコードを保存", action: save)
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
+                .frame(maxWidth: .infinity)
         }
-        .padding(20)
-        .frame(width: 280)
+        .padding(22)
+        .frame(width: 300)
+        .background(.regularMaterial)
         .onAppear { focus = .code }
     }
 
